@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="$(arg name)">
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
    <!-- robot name parameter -->
    <xacro:arg name="name" default="ur"/>
    <!-- import main macro -->
@@ -41,7 +41,7 @@
    <xacro:arg name="tool_device_name" default="/tmp/ttyUR" />
    <xacro:arg name="tool_tcp_port" default="54321" />
 
-   <!-- Simulation parameters -->
+     <!-- Simulation parameters -->
    <xacro:arg name="use_fake_hardware" default="false" />
    <xacro:arg name="fake_sensor_commands" default="false" />
    <xacro:arg name="sim_gazebo" default="false" />
@@ -98,59 +98,6 @@
      <origin xyz="0 0 0" rpy="0 0 0" />          <!-- position robot in the world -->
    </xacro:ur_robot>
 
-   <!-- ========================================= -->
-   <!--           Camera Integration              -->
-   <!-- ========================================= -->
-
-   <!-- Define the Camera Link -->
-   <link name="camera_optical_link">
-     <!-- Optionally, include visual and collision properties -->
-     <visual>
-       <geometry>
-         <box size="0.05 0.05 0.05"/> <!-- Placeholder geometry -->
-       </geometry>
-       <material name="grey">
-         <color rgba="0.5 0.5 0.5 1.0"/>
-       </material>
-     </visual>
-     <collision>
-       <geometry>
-         <box size="0.05 0.05 0.05"/> <!-- Placeholder geometry -->
-       </geometry>
-     </collision>
-     <inertial>
-       <mass value="0.1"/>
-       <inertia ixx="0.001" ixy="0.0" ixz="0.0"
-                iyy="0.001" iyz="0.0"
-                izz="0.001"/>
-     </inertial>
-   </link>
-
-   <!-- Define the Fixed Joint to Connect Camera to tool0 -->
-   <joint name="camera_joint" type="fixed">
-     <parent link="tool0"/>
-     <child link="camera_optical_link"/>
-     <origin xyz="0.0111045 -0.0578816 0.0731921" rpy="-0.006103 0.000185 0.000518"/>
-   </joint>
-
-   <!-- Optional: Define Sensor Plugins or Additional Properties -->
-   <!-- Example: Intel RealSense D455 Camera Plugin -->
-   <!--
-   <gazebo reference="camera_optical_link">
-     <sensor type="depth" name="d455_depth">
-       Sensor specifications
-     </sensor>
-     <sensor type="rgbd" name="d455_rgbd">
-       Sensor specifications
-     </sensor>
-   </gazebo>
-   -->
-
-   <!-- ========================================= -->
-   <!--           End of Camera Integration       -->
-   <!-- ========================================= -->
-
-   <!-- Existing Gazebo and Ignition Plugins -->
    <xacro:if value="$(arg sim_gazebo)">
     <!-- Gazebo plugins -->
     <gazebo reference="world">
@@ -175,4 +122,3 @@
   </xacro:if>
 
 </robot>
-

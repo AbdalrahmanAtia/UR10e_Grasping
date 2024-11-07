@@ -43,9 +43,16 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/urdf")
     DESTINATION share/${PROJECT_NAME}/urdf
   )
 endif()
+
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
   install(DIRECTORY config/
     DESTINATION share/${PROJECT_NAME}/config
+  )
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs")
+  install(DIRECTORY libs/
+    DESTINATION share/${PROJECT_NAME}/libs
   )
 endif()
 

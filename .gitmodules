@@ -1,2 +1,6 @@
 [submodule "abdo_ws/src/gripper"]
 	url = https://github.com/AbdalrahmanAtia/ros2_robotiq_gripper.git
+	path = abdo_ws/src/gripper
+[submodule "abdo_ws/src/serial"]
+	path = abdo_ws/src/serial
+	url = https://github.com/tylerjw/serial

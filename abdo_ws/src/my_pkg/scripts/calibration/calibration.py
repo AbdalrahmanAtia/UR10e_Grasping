@@ -64,7 +64,7 @@ class JTCClient(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/camera/camera/color/image_raw',  # Ensure topic name is correct
+            '/Realsense_D455/color/image_raw',  # Ensure topic name is correct
             self.image_callback,
             10  # QoS history depth
         )

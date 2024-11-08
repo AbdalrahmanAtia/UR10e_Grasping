@@ -46,13 +46,13 @@ class CameraInterface(Node):
 
         self.image_subscription = self.create_subscription(
             Image,
-            '/camera/camera/color/image_raw',  ## Subscribe to our rgb image publisher
+            '/Realsense_D455/color/image_raw',  ## Subscribe to our rgb image publisher
             self.image_callback,
             10)
         
         self.depth_subscription = self.create_subscription(
             Image,
-            '/camera/camera/aligned_depth_to_color/image_raw', ## Subscribe to our aligned depth image publisher
+            '/Realsense_D455/aligned_depth_to_color/image_raw', ## Subscribe to our aligned depth image publisher
             self.depth_callback,
             10)
         

@@ -25,11 +25,7 @@ from launch.substitutions import LaunchConfiguration
 from my_libs.mycamera import Camera
 from pathlib import Path
 from ament_index_python.packages import get_package_prefix
-
 import os
-# D455_CALIB_NAME = os.environ.get("CALIB_FOLDERNAME_D455")
-# D455_CALIB_NAME = "20240319_1553H"
-D455_CALIB_NAME = "20241007_184458H"
 
 
 
@@ -131,17 +127,6 @@ def launch_setup(context, params, param_name_suffix=''):
                 arguments = args_for_static_tf
                 )
     
-    # node_live_viewer = launch_ros.actions.Node(
-    #                     package="my_pkg",
-    #                     executable="live_viewer",
-    #                     parameters=[
-    #                         {"image": "/D455/color/image_raw",
-    #                             "view_size": [1280, 720],
-    #                             "view_loc": [0, 0]}],
-    #                     emulate_tty=True
-    #                     )
-
-    # nodes_to_start = [node_realsense, node_static_tf_broadcast, node_live_viewer]
     nodes_to_start = [node_realsense, node_static_tf_broadcast]
     return nodes_to_start
     

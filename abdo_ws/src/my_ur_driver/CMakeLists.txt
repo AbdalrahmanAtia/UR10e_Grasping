@@ -50,9 +50,9 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
   )
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/libs")
-  install(DIRECTORY libs/
-    DESTINATION share/${PROJECT_NAME}/libs
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/my_libs")
+  install(DIRECTORY my_libs/
+    DESTINATION share/${PROJECT_NAME}/my_libs
   )
 endif()
 

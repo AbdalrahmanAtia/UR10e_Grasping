@@ -12,7 +12,6 @@ This repository contains a ROS-based project for controlling and performing gras
   - [Installation](#installation)
 - [Usage](#usage)
 - [Submodules](#submodules)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## Project Overview
@@ -86,26 +85,129 @@ UR10e_Grasping/
 
 ## Usage
 
-1. **Source the Workspace**:
+### Default ROS Commands
 
-   ```bash
-   source install/setup.bash
-   ```
+```bash
+# Source ROS2
+source /opt/ros/humble/setup.bash
+  ```
 
-2. **Launching the ur10e robot control Node**:
+```bash
+# Launching the default UR robots from ROS:
+ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur10e robot_ip:=192.168.56.101   # Adjust ur_type and IP
+  ```
 
-   Launch the ur10e robot control node, which should start the UR10e robot, if configured correctly. Adjust the command based on your launch files and package names.
+```bash
+# Launching the default MoveIt from ROS:
+ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur10e  # Adjust ur_type
+  ```
 
-   ```bash
-   ros2 launch my_ur_robot my.launch.py
-   ```
-2. **Launching the ur10e robot moveit control Node**:
+```bash
+# Launching the robot on Simulation:
+ros2 launch ur_robot_driver ur_control.launch.py ur_type:=ur10e robot_ip:=192.168.56.101 use_fake_hardware:=true fake_execution:=true
+  ```
 
-   Launch the ur10e robot moveit control node, which should start the UR10e robot moveit, if configured correctly. Adjust the command based on your launch files and package names.
+```bash
+# Launching MoveIt on Simulation:
+ros2 launch ur_moveit_config ur_moveit.launch.py ur_type:=ur10e use_fake_hardware:=true fake_execution:=true
+  ```
 
-   ```bash
-   ros2 launch my_ur_robot my_moveit.launch.py
-   ```
+```bash
+# Running the default Realsense camera:
+ros2 launch realsense2_camera rs_launch.py
+  ```
+
+```bash
+# Running the Realsense camera with aligned depth with color and point cloud enabled:
+ros2 launch realsense2_camera rs_launch.py align_depth.enable:=true pointcloud.enable:=true
+  ```
+### My Custom UR10e Launch Commands
+
+```bash
+# Source the workspace
+cd ~/abdo_ws
+source install/setup.bash
+  ```
+
+```bash
+# Launching the UR10e:
+ros2 launch my_ur_driver my.launch.py  # Modify to adjust ur_type and IP
+  ```
+
+```bash
+# Launching MoveIt:
+ros2 launch my_ur_driver my_moveit.launch.py  # Modify to adjust ur_type
+  ```
+
+```bash
+# Launching the robot on Simulation:
+ros2 launch my_ur_driver my.launch.py use_fake_hardware:=true fake_execution:=true
+  ```
+
+```bash
+# Launching MoveIt on Simulation:
+ros2 launch my_ur_driver my_moveit.launch.py use_fake_hardware:=true fake_execution:=true
+  ```
+
+```bash
+# Running the Realsense camera:
+ros2 launch my_ur_driver camera.launch.py
+  ```
+
+```bash
+# Running the Realsense camera with aligned depth with color and point cloud enabled:
+ros2 launch my_ur_driver camera.launch.py align_depth.enable:=true pointcloud.enable:=true
+  ```
+
+### Gripper Commands
+
+```bash
+# The gripper launch
+ros2 launch robotiq_description robotiq_control.launch.py
+  ```
+
+##### Gripper limits: 0.06 or 0.1 (fully open) - 0.6 (fully closed)
+
+```bash
+# Closing the gripper
+ros2 action send_goal /robotiq_gripper_controller/gripper_cmd control_msgs/action/GripperCommand "{command: {position: 0.6, max_effort: 50.0}}"
+  ```
+
+```bash
+# Opening the gripper
+ros2 action send_goal /robotiq_gripper_controller/gripper_cmd control_msgs/action/GripperCommand "{command: {position: 0.1, max_effort: 50.0}}"
+  ```
+
+
+
+### Running Python Files
+
+```bash
+# Run Python files directly
+/usr/bin/python3.10 calibration.py
+  ```
+
+```bash
+# Or using ROS2
+ros2 run my_pkg sub_realsense.py
+  ```
+
+### Network Connection Issue Solution
+
+```bash
+# Adjust the connection name and robot IP
+sudo nmcli con mod "Wired connection 2" ipv4.addresses 192.168.56.66/24
+sudo nmcli con mod "Wired connection 2" ipv4.method manual
+sudo nmcli con up "Wired connection 2"
+  ```
+
+### Install ROS Packages
+
+```bash
+# Ensure all required ROS packages are installed
+rosdep update
+rosdep install --from-paths /opt/ros/humble/share --ignore-src -r -y
+  ```
 
 ## Submodules
 
@@ -121,16 +223,6 @@ If there are updates in the submodules, you can pull those updates using:
 ```bash
 git submodule update --remote
 ```
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork this repository.
-2. Create a new branch for your feature or bug fix.
-3. Make your changes and ensure they are properly tested.
-4. Commit your changes with clear commit messages.
-5. Push your branch to your fork and open a pull request.
 
 ## License
 

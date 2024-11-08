@@ -28,9 +28,9 @@ UR10e_Grasping/
 │   ├── src/
 │   │   ├── gripper/    # Submodule for the Robotiq gripper drivers
 │   │   ├── serial/     # Submodule or custom package for serial communication
-│   │   └── my_pkg/
-│   │   └── my_ur_driver/
-│   │   └── ur_calibration/
+│   │   └── my_pkg/     # Has the Realsense camera calibration code and data
+│   │   └── my_ur_driver/ # Has the ur10e launch and configuration files 
+│   │   └── ur_calibration/ # Has the correct calibration code for extracting the robot calibration (Kinematics)
 ├── .gitmodules         # Configuration for submodules
 ├── README.md           # Project overview and setup instructions
 └── ...
@@ -38,6 +38,8 @@ UR10e_Grasping/
 
 ### Key Folders
 
+- **`abdo_ws/src/my_pkg`**: Contains the Realsense camera calibration code and data
+- **`abdo_ws/src/my_ur_driver`**: Contains the ur10e launch and configuration files 
 - **`abdo_ws/src/gripper`**: Contains drivers and configuration for controlling the Robotiq gripper. This folder is managed as a submodule and links to an external repository.
 - **`abdo_ws/src/serial`**: Contains either serial communication libraries or specific configurations needed for the UR10e’s serial communication. This folder is also managed as a submodule.
 - **`.gitmodules`**: Contains submodule configurations with URLs linking to external repositories for dependencies.

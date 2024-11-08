@@ -50,11 +50,20 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
   )
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/my_libs")
-  install(DIRECTORY my_libs/
-    DESTINATION share/${PROJECT_NAME}/my_libs
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
+  install(DIRECTORY config/
+    DESTINATION share/${PROJECT_NAME}/config
   )
 endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Realsense Calibration Data")
+  install(DIRECTORY Realsense Calibration Data/
+    DESTINATION share/${PROJECT_NAME}/Realsense Calibration Data
+  )
+endif()
+
+
+
 
 
 

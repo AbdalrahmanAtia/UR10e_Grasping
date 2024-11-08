@@ -57,6 +57,74 @@
    <!-- create link fixed to the "world" -->
    <link name="world" />
 
+
+
+  <!-- for onrobot straight mode -->
+  <!-- 10mm cam_holder_thickness, 13mm quick change adapter thickness, xxmm from vgc10 base to suction tip-->
+  <link name="tcp_vgc10" />
+  <joint name="tool0_2_tcp_vgc10" type="fixed">
+    <parent link="tool0" />
+    <child link="tcp_vgc10" />
+    <!-- <origin xyz="0 0 0.180" rpy="0 0 0" />   -->
+    <origin xyz="0 0 0.175" rpy="0 0 0" />  
+    <!-- unverified values -->
+  </joint>
+
+  <!-- for onrobot straight mode -->
+  <!-- 10mm cam_holder_thickness, 13mm quick change adapter thickness, 200mm from rg2 base to a logical finger pick point (not the extreme finger tip) -->
+  <link name="tcp_rg2" />
+  <joint name="tool0_2_tcp_rg2" type="fixed">
+    <parent link="tool0" />
+    <child link="tcp_rg2" />
+    <!-- <origin xyz="0 0 0.223" rpy="0 0 0" /> -->
+    <!-- <origin xyz="0 0 0.235" rpy="0 0 0" /> -->
+    <origin xyz="0 0 0.232" rpy="0 0 0" />
+  </joint>
+
+    <link name="cam_holder_with_onrobot_single">
+    <inertial>
+      <origin xyz="0.00010121 -0.030402 0.046358" rpy="0 0 0" />
+      <!-- <origin xyz=".00121 -0.030402 0.046358" rpy="0 0 0" /> -->
+      <mass value="0.6381" />
+      <inertia ixx="0.00053122" ixy="-4.1332E-09" ixz="3.2568E-07" iyy="0.00043426" iyz="-1.2224E-05" izz="0.00056022" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://my_ur_driver/urdf/cam_holder_with_onrobot_single.stl" />
+      </geometry>
+      <material name="">
+        <color rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package:///my_ur_driver/urdf/cam_holder_with_onrobot_single.stl" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="tool0_2_cam_holder_with_onrobot_single" type="fixed">
+    <parent link="tool0" />
+    <child link="cam_holder_with_onrobot_single" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+
+    <!-- this part deals with the tcp end effector transform, not related to the visual/collision. -->
+  <!-- so far tcp_gripper is always required even if u dun use it, because the my_robot_advance.cpp always look for it at the start -->
+  <link name="tcp_gripper" />
+  <joint name="tool0_2_tcp_gripper" type="fixed">
+    <parent link="tool0" />
+    <child link="tcp_gripper" />
+    <origin xyz="0 0 0.205" rpy="0 0 0" />
+  </joint>
+
+
+
+
+
    <!-- arm -->
    <xacro:ur_robot
      name="$(arg name)"

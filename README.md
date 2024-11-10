@@ -49,7 +49,8 @@ UR10e_Grasping/
 ### Prerequisites
 
 - **Ubuntu 22.04**
-- **ROS 2 (e.g., Humble)**: This project is designed for ROS 2. Follow the [official ROS 2 installation guide](https://docs.ros.org/en/humble/Installation.html) to set it up.
+- **ROS 2 (Humble)**: This project is designed for ROS 2. Follow the [official ROS 2 installation guide](https://docs.ros.org/en/humble/Installation.html) to set it up. Running "sudo apt-get install ros-humble-ur" is recommended for installing UR robots packages.
+- **Moveit 2 (Humble)**: This project is designed for Moveit Humble. Follow the [official Moveit Humble installation guide](https://moveit.picknik.ai/humble/doc/tutorials/getting_started/getting_started.html) to set it up. You better skip this guide and install moveit humble using "sudo apt install ros-humble-moveit" and then "sudo apt install ros-humble-ur-moveit-config".
 - **Git**: Make sure Git is installed to manage submodules and version control.
   
   ```bash

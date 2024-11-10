@@ -56,11 +56,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
   )
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Realsense Calibration Data")
-  install(DIRECTORY Realsense Calibration Data/
-    DESTINATION share/${PROJECT_NAME}/Realsense Calibration Data
-  )
-endif()
 
 
 

@@ -16,7 +16,7 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 
-add_executable(move_robot src/move_robot.cpp)
+add_executable(move_robot scripts/my_codes/C++_moveit_code/move_robot.cpp)
 
 #### the tester cpp
 target_include_directories(move_robot PUBLIC
@@ -37,20 +37,23 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+
 install(PROGRAMS
-  scripts/mine/realsense_subscriber.py
+  scripts/calibration/capturing_calibration_pictures&poses.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+
+install(PROGRAMS
+  scripts/my_codes/realsense_subscriber.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(PROGRAMS
-  scripts/mine/transformation.py
+  scripts/my_codes/transformation.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(PROGRAMS
- scripts/anygrasp_sdk/grasp_detection/demo.py
- DESTINATION lib/${PROJECT_NAME}
-)
 
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
@@ -59,11 +62,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
   )
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
-  install(DIRECTORY scripts/anygrasp_sdk
-    DESTINATION share/${PROJECT_NAME}/scripts/anygrasp_sdk
-  )
-endif()
 
 project(my_pkg)
 

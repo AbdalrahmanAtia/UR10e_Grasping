@@ -37,26 +37,21 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/launch")
   )
 endif()
 
-# Install URDF files
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/urdf")
-  install(DIRECTORY urdf/
-    DESTINATION share/${PROJECT_NAME}/urdf
+
+
+# Install ur config files
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/my_ur_config")
+  install(DIRECTORY my_ur_config/
+    DESTINATION share/${PROJECT_NAME}/my_ur_config
   )
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
-  install(DIRECTORY config/
-    DESTINATION share/${PROJECT_NAME}/config
+# Install moveit config files
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/my_moveit_config")
+  install(DIRECTORY my_moveit_config/
+    DESTINATION share/${PROJECT_NAME}/my_moveit_config
   )
 endif()
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/config")
-  install(DIRECTORY config/
-    DESTINATION share/${PROJECT_NAME}/config
-  )
-endif()
-
-
 
 
 

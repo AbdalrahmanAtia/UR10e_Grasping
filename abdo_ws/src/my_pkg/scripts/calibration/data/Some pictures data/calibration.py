@@ -64,7 +64,7 @@ class JTCClient(Node):
 
         self.subscription = self.create_subscription(
             Image,
-            '/Realsense_D455/color/image_raw',  # Ensure topic name is correct
+            '/camera/camera/color/image_raw',  # Ensure topic name is correct
             self.image_callback,
             10  # QoS history depth
         )
@@ -557,7 +557,7 @@ class JTCClient(Node):
         with open(filename, 'w') as file:
             # Write headers
             file.write("pose_frame_id\t\"base\"\n")
-            file.write("image_frame_id\t\"D455_color_optical_frame\"\n")
+            file.write("image_frame_id\t\"Realsense_D455_color_optical_frame\"\n")
             file.write("poses\n")
 
             # Write each pose in the desired format
@@ -577,7 +577,7 @@ class JTCClient(Node):
         # Prepare the data to be saved as JSON
         data = {
             "pose_frame_id": "base",
-            "image_frame_id": "D455_color_optical_frame",
+            "image_frame_id": "Realsense_D455_color_optical_frame",
             "poses": poses1
         }
 

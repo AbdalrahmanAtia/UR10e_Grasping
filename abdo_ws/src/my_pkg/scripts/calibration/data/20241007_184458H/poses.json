@@ -1,6 +1,6 @@
 {
     "pose_frame_id": "base",
-    "image_frame_id": "D455_color_optical_frame",
+    "image_frame_id": "Realsense_D455_color_optical_frame",
     "poses": [
         [
             -0.4394375989838361,

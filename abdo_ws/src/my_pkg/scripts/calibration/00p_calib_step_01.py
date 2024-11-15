@@ -185,7 +185,7 @@ class Calibration:
 if __name__ == "__main__":
   #all collected checkerboard images MUST have the marker. black dot towards bottom left of image.
 
-  # full_path = Path(__file__).parents[2].joinpath("my_robot", "data", "20240319_1553H")      #D455 40mm board, mounted based on 3d printed part (furthest)
+  # full_path = Path(__file__).parents[2].joinpath("my_robot", "data", "20240319_1553H")      #Realsense_D455 40mm board, mounted based on 3d printed part (furthest)
   full_path = Path(__file__).parents[0].joinpath("data", "20241007_184458H")
   
   img = cv2.imread(str(full_path.joinpath("00.png")))

@@ -12,6 +12,25 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(ur_robot_driver REQUIRED)
 find_package(moveit_ros_move_group REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(moveit_ros_planning_interface REQUIRED)
+
+add_executable(move_robot src/move_robot.cpp)
+
+#### the tester cpp
+target_include_directories(move_robot PUBLIC
+
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+target_compile_features(move_robot PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+
+ament_target_dependencies(move_robot "rclcpp" "moveit_ros_planning_interface")
+#####
+
+install(TARGETS move_robot DESTINATION lib/${PROJECT_NAME})
+
 
 install(PROGRAMS
   scripts/calibration/calibration.py
@@ -19,20 +38,35 @@ install(PROGRAMS
 )
 
 install(PROGRAMS
-  scripts/calibration/sub_realsense.py
+  scripts/mine/realsense_subscriber.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
 install(PROGRAMS
-  scripts/anygrasp_bridging/anygrasp_application.py
+  scripts/mine/transformation.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+ scripts/anygrasp_sdk/grasp_detection/demo.py
+ DESTINATION lib/${PROJECT_NAME}
+)
+
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+  install(DIRECTORY scripts/
+    DESTINATION share/${PROJECT_NAME}/scripts
+  )
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
+  install(DIRECTORY scripts/anygrasp_sdk
+    DESTINATION share/${PROJECT_NAME}/scripts/anygrasp_sdk
+  )
+endif()
 
 project(my_pkg)
 
-# Find dependencies
-find_package(rclcpp REQUIRED)
 
 
 if(BUILD_TESTING)

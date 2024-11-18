@@ -134,7 +134,7 @@ source install/setup.bash
 
 ```bash
 # Launching the UR10e:
-ros2 launch my_ur_driver my.launch.py  # Modify to adjust ur_type and IP
+ros2 launch my_ur_driver my_ur.launch.py  # Modify to adjust ur_type and IP
   ```
 
 ```bash
@@ -144,7 +144,7 @@ ros2 launch my_ur_driver my_moveit.launch.py  # Modify to adjust ur_type
 
 ```bash
 # Launching the robot on Simulation:
-ros2 launch my_ur_driver my.launch.py use_fake_hardware:=true fake_execution:=true
+ros2 launch my_ur_driver my_ur.launch.py use_fake_hardware:=true fake_execution:=true
   ```
 
 ```bash
@@ -159,7 +159,7 @@ ros2 launch my_ur_driver camera.launch.py
 
 ```bash
 # Running the Realsense camera with aligned depth with color and point cloud enabled:
-ros2 launch my_ur_driver camera.launch.py align_depth.enable:=true pointcloud.enable:=true
+ros2 launch my_ur_driver my_camera.launch.py align_depth.enable:=true pointcloud.enable:=true
   ```
 
 ### Gripper Commands

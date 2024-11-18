@@ -4,5 +4,5 @@
 	
 [submodule "abdo_ws/src/serial"]
     path = abdo_ws/src/serial
-    url = https://github.com/tylerjw/serial
+    url = https://github.com/AbdalrahmanAtia/serial.git
 	

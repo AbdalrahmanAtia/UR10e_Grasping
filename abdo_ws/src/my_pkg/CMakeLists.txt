@@ -33,12 +33,6 @@ install(TARGETS move_robot DESTINATION lib/${PROJECT_NAME})
 
 
 install(PROGRAMS
-  scripts/calibration/calibration.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-
-install(PROGRAMS
   scripts/calibration/capturing_calibration_pictures&poses.py
   DESTINATION lib/${PROJECT_NAME}
 )

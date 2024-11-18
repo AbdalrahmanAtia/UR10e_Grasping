@@ -135,7 +135,7 @@ def launch_setup(context, *args, **kwargs):
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "urdf/my_world.urdf.xacro"]),
+            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world.urdf.xacro"]),
             " ",
             "robot_ip:=",
             robot_ip,
@@ -510,7 +510,7 @@ def generate_launch_description():
             "kinematics_params_file",
             default_value=PathJoinSubstitution(
                 [
-                    FindPackageShare("my_ur_driver"), "config/my_robot_calibration.yaml"
+                    FindPackageShare("my_ur_driver"), "my_ur_config/ur_controllers/ur_calibration.yaml"
                 ]
             ),
             description="The calibration configuration of the actual robot used.",

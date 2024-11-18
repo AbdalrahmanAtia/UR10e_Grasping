@@ -92,7 +92,7 @@ def launch_setup(context, *args, **kwargs):
         [FindPackageShare(description_package), "config", ur_type, "joint_limits.yaml"]
     )
     kinematics_params = PathJoinSubstitution(
-        [FindPackageShare("my_ur_driver"), "config/my_robot_calibration.yaml"]
+        [FindPackageShare("my_ur_driver"), "my_ur_config/ur_controllers/ur_calibration.yaml"]
     )
     physical_params = PathJoinSubstitution(
         [FindPackageShare(description_package), "config", ur_type, "physical_parameters.yaml"]
@@ -106,7 +106,7 @@ def launch_setup(context, *args, **kwargs):
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             # PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "urdf/my_world.urdf.xacro"]),
+            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world.urdf.xacro"]),
             " ",
             "robot_ip:=192.168.56.101",        ########################################
             " ",
@@ -157,7 +157,7 @@ def launch_setup(context, *args, **kwargs):
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare(moveit_config_package), "srdf", moveit_config_file]
+               [FindPackageShare("my_ur_driver"), "my_moveit_config/srdf/my_world.srdf.xacro"]
             ),
             " ",
             "name:=",
@@ -195,7 +195,8 @@ def launch_setup(context, *args, **kwargs):
     ompl_planning_pipeline_config["move_group"].update(ompl_planning_yaml)
 
     # Trajectory Execution Configuration
-    controllers_yaml = load_yaml("ur_moveit_config", "config/controllers.yaml")
+    controllers_yaml = load_yaml("my_ur_driver", "my_moveit_config/moveit_controllers/moveit_controllers.yaml")
+
     # the scaled_joint_trajectory_controller does not work on fake hardware
     change_controllers = context.perform_substitution(use_fake_hardware)
     if change_controllers == "true":

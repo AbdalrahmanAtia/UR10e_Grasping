@@ -31,6 +31,8 @@ setup(
             'robot_controller_moveit = app.robot_controller_moveit:main',
             'robot_controller_rtde = app.robot_controller_rtde:main',
             'gripper_controller = app.gripper_controller:main',
+            'transformation = app.transformation:main',
+
             # Add other executables as needed
         ],
     },

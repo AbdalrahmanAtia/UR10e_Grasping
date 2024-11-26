@@ -26,6 +26,7 @@ The repository structure is as follows:
 UR10e_Grasping/
 ├── abdo_ws/
 │   ├── src/
+│   │   ├── app/ # Contains the system app for robot grasping
 │   │   ├── gripper/    # Submodule for the Robotiq gripper drivers
 │   │   ├── serial/     # Submodule or custom package for serial communication
 │   │   └── my_pkg/     # Has the Realsense camera calibration code and data
@@ -38,6 +39,7 @@ UR10e_Grasping/
 
 ### Key Folders
 
+- **`abdo_ws/src/app`**: Includes all parts of the system (camera, grasp detector, robot, gripper) and a coordinator to integrate all of them
 - **`abdo_ws/src/my_pkg`**: Contains the Realsense camera calibration code and data
 - **`abdo_ws/src/my_ur_driver`**: Contains the ur10e launch and configuration files 
 - **`abdo_ws/src/gripper`**: Contains drivers and configuration for controlling the Robotiq gripper. This folder is managed as a submodule and links to an external repository.

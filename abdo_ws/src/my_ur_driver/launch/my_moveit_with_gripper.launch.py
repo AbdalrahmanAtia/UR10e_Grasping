@@ -106,7 +106,7 @@ def launch_setup(context, *args, **kwargs):
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             # PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
-            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world.urdf.xacro"]),
+            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world_with_gripper.urdf.xacro"]),
             " ",
             "robot_ip:=192.168.56.101",        ########################################
             " ",
@@ -158,7 +158,7 @@ def launch_setup(context, *args, **kwargs):
             " ",
             PathJoinSubstitution(
                 #[FindPackageShare(moveit_config_package), "srdf", moveit_config_file]
-                [FindPackageShare("my_ur_driver"), "my_moveit_config/srdf/my_world.srdf.xacro"]
+                [FindPackageShare("my_ur_driver"), "my_moveit_config/srdf/my_world_with_gripper.srdf.xacro"]
             ),
             " ",
             "name:=",

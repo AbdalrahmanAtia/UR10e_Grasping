@@ -135,7 +135,7 @@ def launch_setup(context, *args, **kwargs):
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world.urdf.xacro"]),
+            PathJoinSubstitution([FindPackageShare("my_ur_driver"), "my_ur_config/urdf/my_world_with_gripper.urdf.xacro"]),
             " ",
             "robot_ip:=",
             robot_ip,
@@ -227,7 +227,7 @@ def launch_setup(context, *args, **kwargs):
 
     initial_joint_controllers = PathJoinSubstitution(
         #[FindPackageShare(runtime_config_package), "config", controllers_file]
-        [FindPackageShare("my_ur_driver"), "my_ur_config/ur_controllers/ur_controllers.yaml"]
+        [FindPackageShare("my_ur_driver"), "my_ur_config/ur_controllers/ur_controllers_with_gripper.yaml"]
 
     )
 

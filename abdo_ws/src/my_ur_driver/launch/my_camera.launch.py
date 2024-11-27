@@ -117,7 +117,7 @@ def launch_setup(context, params, param_name_suffix=''):
                 )
     
     pkg_name = "my_ur_driver"
-    camera = Camera.load_from_path("D455", Path(get_package_prefix(pkg_name)).parents[1].joinpath("src", pkg_name, "Realsense Calibration Data", "results.json"))
+    camera = Camera.load_from_path("D455", Path(get_package_prefix(pkg_name)).parents[1].joinpath("src", pkg_name, "realsense_calibration_data", "results.json"))
     values = [str(value) for value in camera.base_2_cam_transform]
     args_for_static_tf = [*values, "tool0", f"{camera.cam_name}_link"]
 

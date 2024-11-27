@@ -94,7 +94,7 @@ class GripperController:
         self.send_gripper_command(open_position, open_max_effort)
 
         # Wait for the gripper to open completely (adjust time based on the gripper's speed)
-        time.sleep(2)  # 3 seconds is a rough estimate, adjust as needed
+        time.sleep(1)  # 3 seconds is a rough estimate, adjust as needed
 
     def close_gripper(self):
         """

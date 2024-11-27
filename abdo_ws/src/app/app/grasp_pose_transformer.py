@@ -16,6 +16,9 @@ class GraspPoseTransformer:
 
         self.coordinator = coordinator
 
+        self.base_to_camera_transformation_done = False        
+        self.base_to_camera = np.zeros((4,4), dtype=float)  # Transformation matrix from base to camera
+
     def define_grasp_pose(self, grasp_pose):
         """
         The grasp pose relative to the camera frame.
@@ -46,9 +49,8 @@ class GraspPoseTransformer:
     def get_base_to_camera_transformation(self):
         max_retries = 4 
         retry_count = 0
-        done = False
 
-        while retry_count < max_retries and not done:
+        while retry_count < max_retries:
             try:
                 # Lookup the transform from base to camera frame
                 base_to_color_opt_frame_tf = self.coordinator.tf_buffer.lookup_transform(
@@ -58,9 +60,10 @@ class GraspPoseTransformer:
                     timeout=rclpy.duration.Duration(seconds=1.0)
                 )
                 base_to_color_opt_frame = Myframe.from_transformstamped(base_to_color_opt_frame_tf).Tmat
-                self.coordinator.base_to_camera = base_to_color_opt_frame
+                self.base_to_camera = base_to_color_opt_frame
                 self.coordinator.get_logger().info('Transform from base to camera acquired successfully.\n')
-                done = True
+                self.base_to_camera_transformation_done = True
+                return True
 
             except Exception as e:
                 retry_count += 1
@@ -70,19 +73,19 @@ class GraspPoseTransformer:
                 else:
                     self.coordinator.get_logger().error('Max retries reached. Transform lookup failed.\n')
                     return False
-        return done
+        return self.base_to_camera_transformation_done
 
         
     def trasform_graspPose_to_Base(self, selected_grasp):
 
-        if self.coordinator.base_to_camera_transformation_done == False:
+        if self.base_to_camera_transformation_done is False:
             self.get_base_to_camera_transformation()
 
         self.coordinator.get_logger().info('Grasp detected. Transforming grasp pose to base frame...\n')
 
         # Transform the grasp pose to the base frame
         grasp_wrt_optical = self.define_grasp_pose(selected_grasp)
-        grasp_wrt_base = np.matmul(self.coordinator.base_to_camera, grasp_wrt_optical)  # Matrix multiplication for transformation
+        grasp_wrt_base = np.matmul(self.base_to_camera, grasp_wrt_optical)  # Matrix multiplication for transformation
 
         if grasp_wrt_base is None:
             self.coordinator.get_logger().warn('Grasp pose transformation failed.\n')

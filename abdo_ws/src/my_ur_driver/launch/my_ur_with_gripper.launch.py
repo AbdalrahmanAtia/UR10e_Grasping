@@ -232,8 +232,8 @@ def launch_setup(context, *args, **kwargs):
     )
 
     rviz_config_file = PathJoinSubstitution(
-        #[FindPackageShare(description_package), "rviz", "view_robot.rviz"]
-        [FindPackageShare("my_ur_driver"), "my_ur_config/rviz", "view_robot.rviz"]
+        [FindPackageShare(description_package), "rviz", "view_robot.rviz"]
+        #[FindPackageShare("my_ur_driver"), "my_ur_config/rviz", "view_robot.rviz"]
 
     )
 

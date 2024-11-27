@@ -26,6 +26,7 @@ The repository structure is as follows:
 UR10e_Grasping/
 ├── abdo_ws/
 │   ├── src/
+│   │   ├── app/ # Contains the system app for robot grasping
 │   │   ├── gripper/    # Submodule for the Robotiq gripper drivers
 │   │   ├── serial/     # Submodule or custom package for serial communication
 │   │   └── my_pkg/     # Has the Realsense camera calibration code and data
@@ -38,6 +39,7 @@ UR10e_Grasping/
 
 ### Key Folders
 
+- **`abdo_ws/src/app`**: Includes all parts of the system (camera, grasp detector, robot, gripper) and a coordinator to integrate all of them
 - **`abdo_ws/src/my_pkg`**: Contains the Realsense camera calibration code and data
 - **`abdo_ws/src/my_ur_driver`**: Contains the ur10e launch and configuration files 
 - **`abdo_ws/src/gripper`**: Contains drivers and configuration for controlling the Robotiq gripper. This folder is managed as a submodule and links to an external repository.
@@ -153,13 +155,8 @@ ros2 launch my_ur_driver my_moveit.launch.py use_fake_hardware:=true fake_execut
   ```
 
 ```bash
-# Running the Realsense camera:
-ros2 launch my_ur_driver camera.launch.py
-  ```
-
-```bash
-# Running the Realsense camera with aligned depth with color and point cloud enabled:
-ros2 launch my_ur_driver my_camera.launch.py align_depth.enable:=true pointcloud.enable:=true
+# Running the Realsense camera with point cloud and depth aligned enabled:
+ros2 launch my_ur_driver my_camera.launch.py
   ```
 
 ### Gripper Commands
@@ -169,7 +166,7 @@ ros2 launch my_ur_driver my_camera.launch.py align_depth.enable:=true pointcloud
 ros2 launch robotiq_description robotiq_control.launch.py
   ```
 
-##### Gripper limits: 0.06 or 0.1 (fully open) - 0.6 (fully closed)
+##### Gripper limits: 0 or 0.1 (fully open) - 0.8 (fully closed)
 
 ```bash
 # Closing the gripper

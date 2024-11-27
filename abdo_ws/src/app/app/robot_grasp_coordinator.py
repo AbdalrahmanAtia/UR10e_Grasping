@@ -36,7 +36,7 @@ def to_radians(degrees):
 
 
 
-class Coordinator(Node):
+class RobotGraspCoordinator(Node):
     def __init__(self):
         super().__init__('Robot_Grasp_Coordinator_node')  # Initialize the ROS node with the name 'robot_controller_node'
 
@@ -50,7 +50,7 @@ class Coordinator(Node):
         self.grasp_detector = None
 
         # Define the home position for the robot (replace with your desiredv robot's home pose)
-        home_pose = [-8.5, -93.16, 85.48, -80.68, -90.24, -17]
+        home_pose = [-12.52, -98.88, 86.35, -84.11, -89.97, -18.62]
         self.home_pose_in_rad = to_radians(home_pose)  # Convert degrees to radians
 
         locationForRelease = [-69, -80.7, 85, -96.6, -90, 9.7]
@@ -60,30 +60,31 @@ class Coordinator(Node):
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer, self)
         self.buffer = tf2_ros.StaticTransformBroadcaster(self)
-        self.base_to_camera_transformation_done = False
-        
-        self.base_to_camera = np.zeros((4,4), dtype=float)  # Transformation matrix from base to camera
+
         self.count = 0  # Counter to keep track of failed grasp attempts
         self.previous_grasp = None  # To store the previous grasp to avoid repetition
         self.target_pose = None     # To store the current target pose for moving safety
 
         self.executionType = "Visualize"
 
-        self.initialize_RTDE()
+        self.initialize_grasp_detector()
         self.initialize_camera_controller()
         self.initialize_grasp_pose_transformer()
+        self.initialize_RTDE()
         self.initialize_gripper_controller()
-        self.initialize_grasp_detector()
 
         # Flag to control the iterative grasping loop
         self.iterative = True
+        self.shutdown_called = False  # Initialize shutdown_called attribute
 
         # Start the iterative grasping loop in a separate thread
         self.grasp_thread = threading.Thread(target=self.run_grasp_loop)
+        #self.grasp_thread.daemon = True  # Daemon thread to not block on shutdown
         self.grasp_thread.start()
 
         # Start the key press listener in a separate thread for graceful shutdown
         self.key_listener_thread = threading.Thread(target=self.listen_for_exit_key)
+        #self.key_listener_thread.daemon = True  # Daemon thread to not block on shutdown
         self.key_listener_thread.start()
 
         self.get_logger().info('Robot Grasp Coordinator node initialized and iterative grasping started.\n')
@@ -114,44 +115,46 @@ class Coordinator(Node):
         2. Execute grasp with the received images.
         3. Repeat until no grasps are detected or an error occurs.
         """
-        self.move_to_home()  # Move to home position at the start
+        try:
+            self.move_to_home()  # Move to home position at the start
+            time.sleep(1)
+            self.ask_for_grasp_action_type()
 
-        self.ask_for_grasp_action_type()
+            while self.iterative:
+                    
+                    print("\n")
+                    self.get_logger().info('###################### New grasp cycle ... ############################\n')
 
-        while self.iterative:
-            try:
+                    self.get_logger().info('Waiting for the next image pair for grasping...\n')
+                    time.sleep(1)  # Wait for a second before checking for images
 
-                self.get_logger().info('\n\n#################### New grasp cycle ... #######################\n')
+                    color_image, depth_image = self.camera_controller.get_current_images()
 
-                self.get_logger().info('Waiting for the next image pair for grasping...\n')
-                time.sleep(1)  # Wait for a second before checking for images
+                    # Check if both color and depth images are available
+                    if color_image is None or depth_image is None:
+                        self.get_logger().info('No valid image pair received, retrying...\n')
+                        continue  # Skip to the next iteration if images are not available
 
-                color_image, depth_image = self.camera_controller.get_current_images()
+                    self.get_logger().info('Image pair received. Executing grasp...\n')
 
-                # Check if both color and depth images are available
-                if color_image is None or depth_image is None:
-                    self.get_logger().info('No valid image pair received, retrying...\n')
-                    continue  # Skip to the next iteration if images are not available
+                    # Execute the grasp with the current images
+                    grasp_success = self.execute_grasp(color_image, depth_image)
 
-                self.get_logger().info('Image pair received. Executing grasp...\n')
+                    if not grasp_success:
+                        self.get_logger().info('Grasp execution failed or no grasp detected.\n')
+                        self.count += 1  # Increment the failure count
+                        if self.count > 20:
+                            self.get_logger().info('Maximum grasp attempts reached. Terminating iterative loop.\n')
+                            self.iterative = False  # Stop the loop after too many failures
+                    else:
+                        self.count = 0  # Reset the failure count on success
+                        self.get_logger().info('#################### This Grasp executed successfully ... #######################\n')
 
-                # Execute the grasp with the current images
-                grasp_success = self.execute_grasp(color_image, depth_image)
+        except Exception as e:
+            self.get_logger().error(f'Unexpected error in grasp loop: {e}\n')
+        finally:
+            self.cleanup()
 
-                if not grasp_success:
-                    self.get_logger().info('Grasp execution failed or no grasp detected.\n')
-                    self.count += 1  # Increment the failure count
-                    if self.count > 20:
-                        self.get_logger().info('Maximum grasp attempts reached. Terminating iterative loop.\n')
-                        self.iterative = False  # Stop the loop after too many failures
-                else:
-                    self.count = 0  # Reset the failure count on success
-                    self.get_logger().info('\n\n#################### This Grasp executed successfully ... #######################\n')
-
-
-            except Exception as e:
-                self.get_logger().error(f'Unexpected error in grasp loop: {e}\n')
-                self.iterative = False  # Stop the loop on unexpected errors
 
 
 ###################################################################
@@ -181,7 +184,7 @@ class Coordinator(Node):
                 return False
 
             self.target_pose = self.grasp_pose_transformer.trasform_graspPose_to_Base(selected_grasp)
-            self.get_logger().info(f'\n\nTarget grasp pose is: {self.target_pose} \n')
+            self.get_logger().info(f'Target grasp pose is: {self.target_pose} \n')
 
             if self.target_pose is None:
                 return False
@@ -212,7 +215,7 @@ class Coordinator(Node):
     def move_to_grasp(self):
 
         try:
-            self.get_logger().info('Commanding robot to move to the grasp pose.\n')
+            self.get_logger().info('Commanding robot to move to the grasp pose.')
 
             self.move_just_above_target_pose(0.2) # Move 20 cm above the target in the z-axis
             self.rtde_c.moveL(self.target_pose, 0.08, 0.05)  # Move down to the target pose
@@ -222,7 +225,7 @@ class Coordinator(Node):
                 current_pose = self.rtde_r.getActualTCPPose()  # Get the current pose of the robot
                 distance = np.linalg.norm(np.array(current_pose[:3]) - np.array(self.target_pose[:3]))  # Calculate distance to target
                 if distance < 0.01:  # If within 1 cm, assume target reached
-                    self.get_logger().info('Robot reached the grasp pose.\n')
+                    self.get_logger().info('Robot reached the grasp pose.')
                     break
                 time.sleep(0.5)  # Wait before checking again
 
@@ -238,11 +241,11 @@ class Coordinator(Node):
         """
         try:
             self.rtde_c.moveJ(self.home_pose_in_rad, 0.3, 0.2)  # Move to home position with specified speed and acceleration
-            self.get_logger().info('Command sent to move the robot to the home position.\n')
+            self.get_logger().info('Command sent to move the robot to the home position.')
         except Exception as e:
             self.get_logger().error(f'Failed to move to home position: {e}\n')
 
-        self.get_logger().info('Robot returned to home position successfully.\n')
+        self.get_logger().info('Robot returned to home position successfully.')
 
 
     def move_to_release_position(self):
@@ -262,7 +265,7 @@ class Coordinator(Node):
             just_above_target_pose[2] += height  # Move 'height' cm above the target in the z-axis
             just_above_target_pose = tuple(just_above_target_pose)
             self.rtde_c.moveL(just_above_target_pose, 0.2, 0.2)  # Move above the target pose
-            self.get_logger().info('Command sent to move the robot just above the target position.\n')
+            self.get_logger().info('Command sent to move the robot just above the target position.')
         except Exception as e:
             self.get_logger().error(f'Failed to move above target position: {e}\n')
 
@@ -285,6 +288,9 @@ class Coordinator(Node):
         except Exception as e:
             self.get_logger().error(f'Failed to pick the object: {e}\n')
 
+        self.get_logger().error('The object is picked successfully.')
+
+
 #########################################################################
 
     def moveHome_after_grasping(self):
@@ -302,11 +308,11 @@ class Coordinator(Node):
 
             self.moveHome()
 
-            self.get_logger().info('Robot returned to home position successfully.\n')
+            self.get_logger().info('Robot returned to home position successfully.')
 
             return True
         except Exception as e:
-            self.get_logger().error(f'Failed to move the robot to home position: {e}\n')
+            self.get_logger().error(f'Failed to move the robot to home position: {e}')
             return False
         
 ###########################################################################
@@ -333,7 +339,7 @@ class Coordinator(Node):
             self.rtde_c = rtde_control.RTDEControlInterface(self.robot_ip)
             self.get_logger().info('RTDE interfaces initialized successfully.\n')
         except Exception as e:
-            self.get_logger().error(f'Failed to initialize RTDE interfaces: {e}\n')
+            self.get_logger().error(f'\nFailed to initialize RTDE interfaces: {e}\n')
             sys.exit(1)  # Exit the program if RTDE interfaces cannot be initialized
 
         self.rtde_c.setTcp(self.tcp)  # Set the TCP offset for the robot
@@ -388,65 +394,74 @@ class Coordinator(Node):
     def listen_for_exit_key(self):
         """
         Listens for the 'q' key press to gracefully shut down the program.
-        Uses termios and sys.stdin for non-blocking key press detection on Linux.
         """
-        self.get_logger()('Press "q" to safely shut down the program.\n')
+        self.get_logger().info('\n\n******************** Press "q" to safely shut down the program. ************************\n\n')
 
-        # Set up terminal settings for non-blocking key press detection
-        old_settings = termios.tcgetattr(sys.stdin)  # Save current terminal settings
+        old_settings = termios.tcgetattr(sys.stdin)  # Save terminal settings
         try:
-            tty.setcbreak(sys.stdin.fileno())  # Set terminal to non-blocking mode
+            tty.setcbreak(sys.stdin.fileno())  # Set to non-blocking mode
 
             while self.iterative:
-                # Non-blocking check for input using select.select
                 rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
                 if rlist:
-                    key = sys.stdin.read(1)  # Read a single character
-                    if key.lower() == 'q':  # If 'q' is pressed, initiate shutdown
-                        self.get_logger()('"q" pressed. Initiating shutdown...\n')
-                        self.iterative = False  # Stop the iterative loop
-                        self.move_to_home()  # Move the robot back to the home position
+                    key = sys.stdin.read(1)
+                    if key.lower() == 'q':  # Handle 'q' key press
+                        self.get_logger().info('"q" pressed. Initiating shutdown...')
                         break
+        except Exception as e:
+            self.get_logger().error(f"Error in key listener: {e}")
         finally:
-            # Restore original terminal settings
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+            self.cleanup()
 
-################################################################################
+
+##########################################################################33
 
     def cleanup(self):
         """
-        Cleans up resources and safely shuts down the robot controller node.
+        Safely cleans up resources and shuts down the ROS context.
         """
-        try:
-            self.iterative = False  # Stop the iterative loop
-            if self.grasp_thread.is_alive():
-                self.grasp_thread.join()  # Wait for the grasp thread to finish
-            if self.key_listener_thread.is_alive():
-                self.key_listener_thread.join()  # Wait for the key listener thread to finish
+        if self.shutdown_called:
+            return  # Avoid duplicate cleanup
 
+        self.shutdown_called = True
+
+        try:
+            if self.iterative is not False:
+                self.iterative = False  # Stop any loops
+                #time.sleep(1)
+                # # Wait for threads to finish
+                if self.grasp_thread.is_alive():
+                    self.grasp_thread.join()
+                #if self.key_listener_thread.is_alive():
+                #     self.key_listener_thread.join()
+
+            self.get_logger().info('Shutting down the Robot Grasp Coordinator Node ....\n')
             # Disconnect RTDE interfaces
             self.rtde_r.disconnect()
             self.rtde_c.disconnect()
-
-            self.get_logger().info('Robot Grasp Coordinator node shut down and resources cleaned up.\n\n')
+            self.destroy_node()
+            self.get_logger().info('Robot Grasp Coordinator Node resources cleaned up successfully.\n')
         except Exception as e:
-            self.get_logger().error(f'Error during cleanup: {e}\n\n')
-
+            self.get_logger().error(f'Error during cleanup: {e}')
+        finally:
+            # Ensure program exits completely
+            rclpy.shutdown()
+            self.get_logger().info('The Program is shut down successfully.\n')
+            sys.exit(0)  # Force exit after cleanup
 
 #################################################################################
 
 def main(args=None):
-    rclpy.init(args=args)  # Initialize the ROS client library
-    robot_grasp_coordinator_node = Coordinator()  # Create an instance of the Robot Grasp Coordinator node
+    rclpy.init(args=args)
+    robot_grasp_coordinator_node = RobotGraspCoordinator()
 
     try:
-        rclpy.spin(robot_grasp_coordinator_node)  # Keep the node running and processing callbacks
+        rclpy.spin(robot_grasp_coordinator_node)
     except KeyboardInterrupt:
-        robot_grasp_coordinator_node.get_logger().info('KeyboardInterrupt received. Shutting down Robot Grasp Coordinator node...\n')
+        robot_grasp_coordinator_node.get_logger().info('KeyboardInterrupt received. Shutting down...')
     finally:
-        robot_grasp_coordinator_node.cleanup()  # Clean up resources before shutting down
-        robot_grasp_coordinator_node.destroy_node()  # Destroy the ROS node
-        rclpy.shutdown()  # Shutdown the ROS client library
+        robot_grasp_coordinator_node.cleanup()
 
 if __name__ == '__main__':
     main()

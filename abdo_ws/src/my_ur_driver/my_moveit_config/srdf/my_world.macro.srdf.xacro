@@ -65,21 +65,6 @@
     <disable_collisions link1="wrist_2_link" link2="wrist_3_link" reason="Adjacent" />
 
 
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="robotiq_base_link" reason="Adjacent" />
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="robotiq_140_base_link" reason="Adjacent" />
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="tool0" reason="Adjacent" />
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="wrist_1_link" reason="Adjacent" />
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="wrist_2_link" reason="Adjacent" />
-    <disable_collisions link1="cam_holder_with_onrobot_single" link2="wrist_3_link" reason="Adjacent" />
-
-    <!-- <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="robotiq_base_link" reason="Adjacent" />
-    <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="robotiq_140_base_link" reason="Adjacent" />
-    <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="tool0" reason="Adjacent" />
-    <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="wrist_1_link" reason="Adjacent" />
-    <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="wrist_2_link" reason="Adjacent" />
-    <disable_collisions link1="tool0_2_cam_holder_with_onrobot_single" link2="wrist_3_link" reason="Adjacent" />
- -->
-
 
   </xacro:macro>
 </robot>

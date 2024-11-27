@@ -149,12 +149,6 @@ def launch_setup(context, *args, **kwargs):
             "physical_params:=",
             physical_params,
             " ",
-            "visual_params:=",
-            visual_params,
-            " ",
-            "safety_limits:=",
-            safety_limits,
-            " ",
             "safety_pos_margin:=",
             safety_pos_margin,
             " ",
@@ -238,7 +232,9 @@ def launch_setup(context, *args, **kwargs):
     )
 
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare(description_package), "rviz", "view_robot.rviz"]
+        #[FindPackageShare(description_package), "rviz", "view_robot.rviz"]
+        [FindPackageShare("my_ur_driver"), "my_ur_config/rviz", "view_robot.rviz"]
+
     )
 
     # define update rate
@@ -390,6 +386,10 @@ def launch_setup(context, *args, **kwargs):
         "io_and_status_controller",
         "speed_scaling_state_broadcaster",
         "force_torque_sensor_broadcaster",
+        #"forward_position_controller",  # Previously inactive, now active
+        "robotiq_gripper_controller",
+        "robotiq_activation_controller",  # Start this controller as active
+
     ]
     controllers_inactive = ["forward_position_controller"]
 
@@ -427,8 +427,19 @@ def launch_setup(context, *args, **kwargs):
     gripper_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["robotiq_gripper_controller", "-c", "/controller_manager"]
+        arguments=["robotiq_gripper_controller", "-c", "/controller_manager", controller_spawner_timeout,
+    ],
+    output="screen",
     )
+
+    gripper_activation_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["robotiq_activation_controller", "-c", "/controller_manager", controller_spawner_timeout,
+    ],
+    output="screen",
+    )
+
 
     gripper_joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -436,16 +447,11 @@ def launch_setup(context, *args, **kwargs):
         arguments=[
             "joint_state_broadcaster",
             "--controller-manager",
-            "/controller_manager",
-        ],
+            "/controller_manager", controller_spawner_timeout,
+    ],
+    output="screen",
     )
 
-
-    gripper_activation_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["robotiq_activation_controller", "-c", "/controller_manager"],
-    )
 
 
     nodes_to_start = [
@@ -456,12 +462,12 @@ def launch_setup(context, *args, **kwargs):
         controller_stopper_node,
         urscript_interface,
         robot_state_publisher_node,
-        #rviz_node,
+        rviz_node,
         initial_joint_controller_spawner_stopped,
         initial_joint_controller_spawner_started,
         gripper_controller_spawner,
-        #gripper_joint_state_broadcaster_spawner,
-        #gripper_activation_controller_spawner
+        gripper_joint_state_broadcaster_spawner,
+        gripper_activation_controller_spawner
     ] + controller_spawners
 
     return nodes_to_start

@@ -30,6 +30,9 @@ import tty
 import keyboard  # Import the keyboard module
 
 
+from grasp_detector_interface import GraspDetectorInterface
+from grasp_detector_factory import GraspDetectorFactory
+
 def to_radians(degrees):
     convertedRadians = [np.radians(angle) for angle in degrees]
     return convertedRadians
@@ -95,15 +98,19 @@ class RobotGraspCoordinator(Node):
 
     def ask_for_grasp_action_type(self):
 
-        # Ask if the user wants to execute the grasp or just visualize
-        action = input("Press 'e' to execute the grasp or 'v' to visualize: ").strip().lower()
-        if action == "e":
-            self.executionType = "Execute"
-        elif action == "v":
-            self.executionType = "Visualize"
-        else:
-            print("Invalid input! Please press 'e' to execute or 'v' to visualize.")
-            self.ask_for_grasp_action_type()  # Ask again if input is invalid
+        try:
+            # Ask if the user wants to execute the grasp or just visualize
+            action = input("\nPress 'e' to execute the grasp or 'v' to visualize: ").strip().lower()
+            if action == "e":
+                self.executionType = "Execute"
+            elif action == "v":
+                self.executionType = "Visualize"
+            else:
+                print("Invalid input! Please press 'e' to execute or 'v' to visualize.")
+                self.ask_for_grasp_action_type()  # Ask again if input is invalid
+
+        except ValueError as e:
+            print(f"Error: {e}")
 
 
 ##################################################################
@@ -115,8 +122,8 @@ class RobotGraspCoordinator(Node):
         #2. Execute grasp with the received images.
         #3. Repeat until no grasps are detected or an error occurs.
         try:
-            self.move_to_home()  # Move to home position at the start
             time.sleep(1)
+            self.move_to_home()  # Move to home position at the start
             self.ask_for_grasp_action_type()
 
             while self.iterative:
@@ -140,9 +147,9 @@ class RobotGraspCoordinator(Node):
                     grasp_success = self.execute_grasp(color_image, depth_image)
 
                     if not grasp_success:
-                        self.get_logger().info('Grasp execution failed or no grasp detected.\n')
+                        self.get_logger().error('Grasp execution failed or no grasp detected.\n')
                         self.count += 1  # Increment the failure count
-                        if self.count > 20:
+                        if self.count > 30:
                             self.get_logger().info('Maximum grasp attempts reached. Terminating iterative loop.\n')
                             self.iterative = False  # Stop the loop after too many failures
                     else:
@@ -166,7 +173,7 @@ class RobotGraspCoordinator(Node):
 
             if selected_grasp is not None:
                 if selected_grasp == self.previous_grasp:
-                    self.get_logger().info('Same grasp as previous detected. Skipping to avoid repetition.\n')
+                    self.get_logger().error('Same grasp as previous detected. Skipping to avoid repetition.\n')
                     return False
                 self.previous_grasp = selected_grasp  # Update the previous grasp
             else:
@@ -228,7 +235,7 @@ class RobotGraspCoordinator(Node):
     def move_to_home(self):
 
         try:
-            self.rtde_c.moveJ(self.home_pose_in_rad, 0.3, 0.2)  # Move to home position with specified speed and acceleration
+            self.rtde_c.moveJ(self.home_pose_in_rad, 0.4, 0.3)  # Move to home position with specified speed and acceleration
             self.get_logger().info('Command sent to move the robot to the home position.')
         except Exception as e:
             self.get_logger().error(f'Failed to move to home position: {e}\n')
@@ -242,7 +249,7 @@ class RobotGraspCoordinator(Node):
         self.move_just_above_target_pose(0.4) # Move 40 cm above the target in the z-axis
         # Define a specific release location (replace with your desired release location)
 
-        self.rtde_c.moveJ(self.locationForRelease_in_rad, 0.3, 0.2)  # Move to the release location
+        self.rtde_c.moveJ(self.locationForRelease_in_rad, 0.4, 0.3)  # Move to the release location
 
 ####################################################################
 
@@ -252,7 +259,7 @@ class RobotGraspCoordinator(Node):
             just_above_target_pose = list(self.target_pose)
             just_above_target_pose[2] += height  # Move 'height' cm above the target in the z-axis
             just_above_target_pose = tuple(just_above_target_pose)
-            self.rtde_c.moveL(just_above_target_pose, 0.2, 0.2)  # Move above the target pose
+            self.rtde_c.moveL(just_above_target_pose, 0.1, 0.1)  # Move above the target pose
             self.get_logger().info('Command sent to move the robot just above the target position.')
         except Exception as e:
             self.get_logger().error(f'Failed to move above target position: {e}\n')
@@ -276,7 +283,7 @@ class RobotGraspCoordinator(Node):
         except Exception as e:
             self.get_logger().error(f'Failed to pick the object: {e}\n')
 
-        self.get_logger().error('The object is picked successfully.')
+        self.get_logger().info('The object is picked successfully.')
 
 
 #########################################################################
@@ -360,9 +367,16 @@ class RobotGraspCoordinator(Node):
 ##############################################################################
 
     def initialize_grasp_detector(self):
+        
         # Initialize GraspDetector to detect graspable objects
         try:
-            self.grasp_detector = GraspDetector(self)
+            print("\nSelect a Grasp Detector:")
+            print("1: AnyGrasp")
+            print("2: Grasp Detector 2")
+            
+            grasp_detector_choice = int(input("\nEnter your choice (1 or 2): "))
+            # Dynamically create and set the grasp detector
+            self.grasp_detector = GraspDetectorFactory.create_grasp_detector(grasp_detector_choice, self)
             self.get_logger().info('Grasp Detector initialized successfully.\n')
         except Exception as e:
             self.get_logger().error(f'Failed to initialize Grasp Detector: {e}\n')

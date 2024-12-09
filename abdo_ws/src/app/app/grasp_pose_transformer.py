@@ -39,9 +39,9 @@ class GraspPoseTransformer:
 
         final_target_F = ori_target_F.pose_trans(rotate_y_only_F)
 
-        final_target2_F = final_target_F.pose_trans(rotate_z_only_F)
+        final_target_F = final_target_F.pose_trans(rotate_z_only_F)
 
-        T_grasp = final_target2_F.Tmat
+        T_grasp = final_target_F.Tmat
         
         return T_grasp
     
@@ -94,6 +94,6 @@ class GraspPoseTransformer:
         ori_target_F = Myframe.from_Tmat(grasp_wrt_base)  # Create a transformation frame from the grasp pose
         ori_target_tf = ori_target_F.as_transform("base", "finalll", self.coordinator)  # Convert to a TF message
         self.coordinator.buffer.sendTransform(ori_target_tf)  # Broadcast the transform
-        target_pose = ori_target_F.as_UR_pose()  # Convert to UR robot pose format
+        target_pose = ori_target_F.as_UR_pose()  # Convert to our UR robot pose format
 
         return target_pose

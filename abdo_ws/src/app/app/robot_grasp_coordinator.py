@@ -109,12 +109,11 @@ class RobotGraspCoordinator(Node):
 ##################################################################
 
     def run_grasp_loop(self):
-        """
-        Runs the iterative grasping workflow:
-        1. Wait for the next image pair.
-        2. Execute grasp with the received images.
-        3. Repeat until no grasps are detected or an error occurs.
-        """
+        #
+        #Runs the iterative grasping workflow:
+        #1. Wait for the next image pair.
+        #2. Execute grasp with the received images.
+        #3. Repeat until no grasps are detected or an error occurs.
         try:
             self.move_to_home()  # Move to home position at the start
             time.sleep(1)
@@ -160,16 +159,7 @@ class RobotGraspCoordinator(Node):
 ###################################################################
 
     def execute_grasp(self, color_image, depth_image):
-        """
-        Executes a single grasp cycle with the provided color and depth images.
 
-        Args:
-            color_image (numpy.ndarray): The latest color image.
-            depth_image (numpy.ndarray): The latest depth image.
-
-        Returns:
-            bool: True if grasp was executed successfully, False otherwise.
-        """
         try:
             self.get_logger().info('Detecting grasps...\n')
             selected_grasp = self.grasp_detector.detect_grasps(color_image, depth_image)  # Detect possible grasps and return one
@@ -236,9 +226,7 @@ class RobotGraspCoordinator(Node):
 ####################################################################
 
     def move_to_home(self):
-        """
-        Commands the robot to move to the predefined home position.
-        """
+
         try:
             self.rtde_c.moveJ(self.home_pose_in_rad, 0.3, 0.2)  # Move to home position with specified speed and acceleration
             self.get_logger().info('Command sent to move the robot to the home position.')
@@ -294,12 +282,7 @@ class RobotGraspCoordinator(Node):
 #########################################################################
 
     def moveHome_after_grasping(self):
-        """
-        Moves the robot back to the home position after grasping.
 
-        Returns:
-            bool: True if movement was successful, False otherwise.
-        """
         try:
             self.get_logger().info('Commanding robot to move back to the home position after grasping.\n')
 
@@ -318,10 +301,7 @@ class RobotGraspCoordinator(Node):
 ###########################################################################
 
     def listener_callback(self, color_msg, depth_msg):
-        """
-        Callback function to handle incoming synchronized color and depth images.
-        Converts images from ROS messages to OpenCV format.
-        """
+
         try:
             self.color_image = self.br.imgmsg_to_cv2(color_msg, desired_encoding='bgr8')  # Convert color image
             self.depth_image = self.br.imgmsg_to_cv2(depth_msg, desired_encoding='passthrough')  # Convert depth image

@@ -16,6 +16,7 @@ import random
 from gsnet import AnyGrasp
 from graspnetAPI import GraspGroup
 
+from grasp_detector_interface import GraspDetectorInterface
 
 
 # Initialize configuration similar to argparse
@@ -26,103 +27,9 @@ parser.add_argument('--gripper_height', type=float, default=0.03, help='Gripper 
 parser.add_argument('--top_down_grasp', action='store_true', help='Output top-down grasps.')
 parser.add_argument('--debug', action='store_true', help='Enable debug mode')
 
-# Bounding box coordinates from the mask
-x_min, y_min, x_max, y_max = 264, 47, 924, 526
 
-# Define depth range in meters
-z_min = 0.0  # Minimum depth (meters)
-z_max = .8  # Maximum depth (meters)
-
-# Function to crop and filter the depth image
-def crop_and_filter_depth_in_meters(depth_image, bbox, z_min, z_max):
-    """
-    Crop and filter the depth image based on bounding box and depth range in meters.
-
-    Parameters:
-    - depth_image: The depth image (numpy array, assumed in millimeters).
-    - bbox: Tuple containing (x_min, y_min, x_max, y_max).
-    - z_min: Minimum depth value in meters.
-    - z_max: Maximum depth value in meters.
-
-    Returns:
-    - Cropped and filtered depth image (in meters).
-    """
-    x_min, y_min, x_max, y_max = bbox
-
-    # Crop the depth image
-    cropped_depth = depth_image[y_min:y_max, x_min:x_max]
-
-    # Convert depth to meters
-    cropped_depth_meters = cropped_depth / 1000.0
-
-    # Apply depth range filtering in meters
-    depth_mask = (cropped_depth_meters >= z_min) & (cropped_depth_meters <= z_max)
-    filtered_depth = np.where(depth_mask, cropped_depth_meters, 0)  # Set out-of-range values to 0
-
-    return filtered_depth
-
-# Function to crop the color image
-def crop_color_image(color_image, bbox):
-    """
-    Crop the color image based on the bounding box.
-
-    Parameters:
-    - color_image: The color image (numpy array).
-    - bbox: Tuple containing (x_min, y_min, x_max, y_max).
-
-    Returns:
-    - Cropped color image.
-    """
-    x_min, y_min, x_max, y_max = bbox
-    return color_image[y_min:y_max, x_min:x_max]
-
-def compute_workspace_from_bbox(x, y, w, h, depth_image, fx, fy, cx, cy, scale):
-    """
-    Compute the 3D workspace limits (xmin, xmax, ymin, ymax, zmin, zmax) from a bounding box.
-
-    Parameters:
-    - x, y, w, h: Bounding box in pixels (top-left corner and size).
-    - depth_image: Depth image in millimeters.
-    - fx, fy: Focal lengths of the camera.
-    - cx, cy: Principal point offsets of the camera.
-    - scale: Depth scaling factor (e.g., 1000 for millimeters to meters).
-
-    Returns:
-    - Workspace limits: [xmin, xmax, ymin, ymax, zmin, zmax].
-    """
-    # Crop depth image to bounding box
-    cropped_depth = depth_image[y:y + h, x:x + w] / scale  # Convert to meters
-
-    # Ignore invalid depth values (e.g., zeros)
-    valid_depth_mask = (cropped_depth > 0)
-    valid_depth = cropped_depth[valid_depth_mask]
-
-    # Compute zmin and zmax
-    zmin = valid_depth.min()
-    zmax = valid_depth.max()
-
-    # Generate meshgrid for pixel coordinates within the bounding box
-    u = np.arange(x, x + w)
-    v = np.arange(y, y + h)
-    u, v = np.meshgrid(u, v)
-
-    # Crop u, v using the valid depth mask
-    u = u[valid_depth_mask]
-    v = v[valid_depth_mask]
-
-    # Compute 3D coordinates
-    x_real = (u - cx) * valid_depth / fx
-    y_real = (v - cy) * valid_depth / fy
-
-    # Compute xmin, xmax, ymin, ymax
-    xmin, xmax = x_real.min(), x_real.max()
-    ymin, ymax = y_real.min(), y_real.max()
-
-    return [xmin, xmax, ymin, ymax, zmin, zmax]
-
-
-class GraspDetector:
-    def __init__(self, coordinator):
+class GraspDetector(GraspDetectorInterface):
+    def __init__(self, coordinator=None):
         """
         Initializes the GraspDetector with the given configurations.
 
@@ -151,16 +58,10 @@ class GraspDetector:
         self.fy = 642.3461744750167
         self.cx = 647.5434733474444
         self.cy = 373.3602344467871
-
-
-
-
+        self.scale = 1000.0
 
         # self.fx, self.fy = 927.17, 927.37
         # self.cx, self.cy = 651.32, 349.62
-
-        self.scale = 1000.0
-
 
         #original
         # self.xmin, self.xmax = -0.19, 0.12
@@ -170,7 +71,6 @@ class GraspDetector:
         # self.xmin, self.ymin, self.xmax, self.ymax =  0.264, 0.047, 0.924, 0.526
         # self.zmin = 0.0  # Minimum depth (meters)
         # self.zmax = .8  # Maximum depth (meters)
-
 
         self.xmin, self.xmax = -0.25, 0.20
         self.ymin, self.ymax = -.2, 0.4
@@ -304,17 +204,6 @@ class GraspDetector:
             vis.destroy_window()
 
 
-
-
-
-
-
-
-
-
-
-
-
     def process_and_visualize_point_cloud(self, color_image, depth_image):
         if color_image is not None and depth_image is not None:
 
@@ -386,3 +275,105 @@ class GraspDetector:
         points = points[mask].astype(np.float32)
 
         return points
+    
+
+
+    def set_coordinator(self, coordinator):
+        self.coordinator = coordinator
+
+        
+
+# Bounding box coordinates from the mask
+x_min, y_min, x_max, y_max = 264, 47, 924, 526
+
+# Define depth range in meters
+z_min = 0.0  # Minimum depth (meters)
+z_max = .8  # Maximum depth (meters)
+
+# Function to crop and filter the depth image
+def crop_and_filter_depth_in_meters(depth_image, bbox, z_min, z_max):
+    """
+    Crop and filter the depth image based on bounding box and depth range in meters.
+
+    Parameters:
+    - depth_image: The depth image (numpy array, assumed in millimeters).
+    - bbox: Tuple containing (x_min, y_min, x_max, y_max).
+    - z_min: Minimum depth value in meters.
+    - z_max: Maximum depth value in meters.
+
+    Returns:
+    - Cropped and filtered depth image (in meters).
+    """
+    x_min, y_min, x_max, y_max = bbox
+
+    # Crop the depth image
+    cropped_depth = depth_image[y_min:y_max, x_min:x_max]
+
+    # Convert depth to meters
+    cropped_depth_meters = cropped_depth / 1000.0
+
+    # Apply depth range filtering in meters
+    depth_mask = (cropped_depth_meters >= z_min) & (cropped_depth_meters <= z_max)
+    filtered_depth = np.where(depth_mask, cropped_depth_meters, 0)  # Set out-of-range values to 0
+
+    return filtered_depth
+
+# Function to crop the color image
+def crop_color_image(color_image, bbox):
+    """
+    Crop the color image based on the bounding box.
+
+    Parameters:
+    - color_image: The color image (numpy array).
+    - bbox: Tuple containing (x_min, y_min, x_max, y_max).
+
+    Returns:
+    - Cropped color image.
+    """
+    x_min, y_min, x_max, y_max = bbox
+    return color_image[y_min:y_max, x_min:x_max]
+
+def compute_workspace_from_bbox(x, y, w, h, depth_image, fx, fy, cx, cy, scale):
+    """
+    Compute the 3D workspace limits (xmin, xmax, ymin, ymax, zmin, zmax) from a bounding box.
+
+    Parameters:
+    - x, y, w, h: Bounding box in pixels (top-left corner and size).
+    - depth_image: Depth image in millimeters.
+    - fx, fy: Focal lengths of the camera.
+    - cx, cy: Principal point offsets of the camera.
+    - scale: Depth scaling factor (e.g., 1000 for millimeters to meters).
+
+    Returns:
+    - Workspace limits: [xmin, xmax, ymin, ymax, zmin, zmax].
+    """
+    # Crop depth image to bounding box
+    cropped_depth = depth_image[y:y + h, x:x + w] / scale  # Convert to meters
+
+    # Ignore invalid depth values (e.g., zeros)
+    valid_depth_mask = (cropped_depth > 0)
+    valid_depth = cropped_depth[valid_depth_mask]
+
+    # Compute zmin and zmax
+    zmin = valid_depth.min()
+    zmax = valid_depth.max()
+
+    # Generate meshgrid for pixel coordinates within the bounding box
+    u = np.arange(x, x + w)
+    v = np.arange(y, y + h)
+    u, v = np.meshgrid(u, v)
+
+    # Crop u, v using the valid depth mask
+    u = u[valid_depth_mask]
+    v = v[valid_depth_mask]
+
+    # Compute 3D coordinates
+    x_real = (u - cx) * valid_depth / fx
+    y_real = (v - cy) * valid_depth / fy
+
+    # Compute xmin, xmax, ymin, ymax
+    xmin, xmax = x_real.min(), x_real.max()
+    ymin, ymax = y_real.min(), y_real.max()
+
+    return [xmin, xmax, ymin, ymax, zmin, zmax]
+

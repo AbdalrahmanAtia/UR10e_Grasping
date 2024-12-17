@@ -1,6 +1,6 @@
-# grasp_system_pkg/grasp_system_pkg/robot_controller_node.py
 
 import math
+import os
 import select
 import subprocess
 import sys
@@ -88,7 +88,7 @@ class RobotGraspCoordinator(Node):
         # Start the key press listener in a separate thread for graceful shutdown
         self.key_listener_thread = threading.Thread(target=self.listen_for_exit_key)
         #self.key_listener_thread.daemon = True  # Daemon thread to not block on shutdown
-        self.key_listener_thread.start()
+        #self.key_listener_thread.start()
 
         self.get_logger().info('Robot Grasp Coordinator node initialized and iterative grasping started.\n')
 
@@ -100,7 +100,8 @@ class RobotGraspCoordinator(Node):
 
         try:
             # Ask if the user wants to execute the grasp or just visualize
-            action = input("\nPress 'e' to execute the grasp or 'v' to visualize: ").strip().lower()
+            # action = input("\nPress 'e' to execute the grasp or 'v' to visualize: ").strip().lower()
+            action = input("\nPress 'e' to execute the grasp or 'v' to visualize: ")
             if action == "e":
                 self.executionType = "Execute"
             elif action == "v":
@@ -111,6 +112,9 @@ class RobotGraspCoordinator(Node):
 
         except ValueError as e:
             print(f"Error: {e}")
+
+        self.key_listener_thread.start()
+
 
 
 ##################################################################
@@ -125,11 +129,9 @@ class RobotGraspCoordinator(Node):
             time.sleep(1)
             self.move_to_home()  # Move to home position at the start
             self.ask_for_grasp_action_type()
-
             while self.iterative:
                     
-                    print("\n")
-                    self.get_logger().info('###################### New grasp cycle ... ############################\n')
+                    print('\n###################### New grasp cycle ... ############################\n')
 
                     self.get_logger().info('Waiting for the next image pair for grasping...\n')
                     time.sleep(1)  # Wait for a second before checking for images
@@ -154,7 +156,7 @@ class RobotGraspCoordinator(Node):
                             self.iterative = False  # Stop the loop after too many failures
                     else:
                         self.count = 0  # Reset the failure count on success
-                        self.get_logger().info('#################### This Grasp executed successfully ... #######################\n')
+                        print('#################### This Grasp executed successfully ... #######################\n')
 
         except Exception as e:
             self.get_logger().error(f'Unexpected error in grasp loop: {e}\n')
@@ -172,6 +174,7 @@ class RobotGraspCoordinator(Node):
             selected_grasp = self.grasp_detector.detect_grasps(color_image, depth_image)  # Detect possible grasps and return one
 
             if selected_grasp is not None:
+                
                 if selected_grasp == self.previous_grasp:
                     self.get_logger().error('Same grasp as previous detected. Skipping to avoid repetition.\n')
                     return False
@@ -181,12 +184,14 @@ class RobotGraspCoordinator(Node):
                 return False
 
             self.target_pose = self.grasp_pose_transformer.trasform_graspPose_to_Base(selected_grasp)
-            self.get_logger().info(f'Target grasp pose is: {self.target_pose} \n')
+            # self.get_logger().info(f'Target grasp pose is: {self.target_pose} \n')
 
             if self.target_pose is None:
                 return False
             
             if self.executionType == "Execute":
+
+                self.gripper_controller.adjust_gripper_width(selected_grasp.width)
 
                 self.move_to_grasp()  
 
@@ -212,10 +217,11 @@ class RobotGraspCoordinator(Node):
     def move_to_grasp(self):
 
         try:
-            self.get_logger().info('Commanding robot to move to the grasp pose.')
+            self.get_logger().warn('Commanding robot to move to the grasp pose.')
 
             self.move_just_above_target_pose(0.2) # Move 20 cm above the target in the z-axis
-            self.rtde_c.moveL(self.target_pose, 0.08, 0.05)  # Move down to the target pose
+            #self.gripper_controller.open_gripper()
+            self.rtde_c.moveL(self.target_pose, 0.1, 0.1)  # Move down to the target pose
 
             # Implement a waiting mechanism to confirm movement completion
             while True:
@@ -240,16 +246,16 @@ class RobotGraspCoordinator(Node):
         except Exception as e:
             self.get_logger().error(f'Failed to move to home position: {e}\n')
 
-        self.get_logger().info('Robot returned to home position successfully.')
+        self.get_logger().info('Robot returned to home position successfully.\n')
 
 
     def move_to_release_position(self):
-        self.get_logger().info('Command sent to move the robot to the release position.\n')
+        self.get_logger().info('Command sent to move the robot to the release position.')
 
-        self.move_just_above_target_pose(0.4) # Move 40 cm above the target in the z-axis
+        self.move_just_above_target_pose(0.2) # Move 40 cm above the target in the z-axis
         # Define a specific release location (replace with your desired release location)
 
-        self.rtde_c.moveJ(self.locationForRelease_in_rad, 0.4, 0.3)  # Move to the release location
+        self.rtde_c.moveJ(self.locationForRelease_in_rad, 0.4, 0.4)  # Move to the release location
 
 ####################################################################
 
@@ -259,8 +265,8 @@ class RobotGraspCoordinator(Node):
             just_above_target_pose = list(self.target_pose)
             just_above_target_pose[2] += height  # Move 'height' cm above the target in the z-axis
             just_above_target_pose = tuple(just_above_target_pose)
-            self.rtde_c.moveL(just_above_target_pose, 0.1, 0.1)  # Move above the target pose
-            self.get_logger().info('Command sent to move the robot just above the target position.')
+            self.rtde_c.moveL(just_above_target_pose, 0.3, 0.1)  # Move above the target pose
+            #self.get_logger().info('Command sent to move the robot just above the target position.')
         except Exception as e:
             self.get_logger().error(f'Failed to move above target position: {e}\n')
 
@@ -268,7 +274,7 @@ class RobotGraspCoordinator(Node):
 
     def release_object(self):
         try:
-            self.get_logger().info('Releasing the object...\n')
+            self.get_logger().info('Releasing the object...')
             self.gripper_controller.open_gripper()  # Open the gripper to release the object
         except Exception as e:
             self.get_logger().error(f'Failed to release the object: {e}\n')
@@ -278,7 +284,7 @@ class RobotGraspCoordinator(Node):
     def pick_object(self):
         try:
         # Control the gripper to grasp the object
-            self.gripper_controller.open_gripper() # Just to make sure the gripper is open
+            #self.gripper_controller.open_gripper() # Just to make sure the gripper is open
             self.gripper_controller.close_gripper()
         except Exception as e:
             self.get_logger().error(f'Failed to pick the object: {e}\n')

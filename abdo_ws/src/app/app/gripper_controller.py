@@ -80,3 +80,22 @@ class GripperController:
 
         # Wait for the gripper to close completely (adjust time based on the gripper's speed)
         time.sleep(3)  # 4 seconds is an estimate, adjust as necessary
+
+
+    def adjust_gripper_width(self, grasp_object_width):
+        self.coordinator.get_logger().info('Adjust the gripper width to grasp the object...')  
+
+        position = 0.8 - grasp_object_width*10
+
+        if position <= 0.2:
+            position = 0.3
+        elif position >= 0.5:
+            position = 0.4
+        
+        max_effort = 100.0  # Maximum effort to close the gripper
+
+        # Send the close command to the gripper
+        self.send_gripper_command(position, max_effort)
+
+        # Wait for the gripper to close completely (adjust time based on the gripper's speed)
+        time.sleep(2)  # 4 seconds is an estimate, adjust as necessary

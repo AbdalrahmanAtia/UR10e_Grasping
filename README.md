@@ -3,6 +3,15 @@
 
 This repository contains a ROS-based project for controlling and performing grasping tasks with a UR10e robotic arm. The setup includes configurations and dependencies for working with the UR10e, a Robotiq gripper, and additional custom packages.
 
+
+https://github.com/user-attachments/assets/3b38dc54-bd81-4e59-a324-d1ab38bdfbc6
+
+
+
+https://github.com/user-attachments/assets/10fceca6-a3b9-4606-b4ec-ae415e48d024
+
+
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
